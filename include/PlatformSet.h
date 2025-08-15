@@ -15,6 +15,7 @@ public:
     bool isOnPlatform(int hamster_x, int hamster_y, int hamster_size, int prev_y) const;
     // Restituisce la piattaforma su cui il criceto atterra, nullptr se nessuna
     const Platform* getLandingPlatform(int hamster_x, int hamster_y, int hamster_size, int prev_y) const;
+    const std::vector<Platform>& getPlatforms() const { return m_platforms; }
 private:
     std::vector<Platform> m_platforms;
 };

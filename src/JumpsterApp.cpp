@@ -32,12 +32,15 @@ JumpsterApp::JumpsterApp() {
         return;
     }
     background = new Background(WINDOW_WIDTH, WINDOW_HEIGHT, renderer, "../resources/background_platform.png");
-    // Tesoro 40x32 px sopra la piattaforma {1, 358, 35, 20}
+    // Tesoro 40x32 px sopra una piattaforma casuale
     int treasure_w = 40;
     int treasure_h = 32;
-    int plat_x = 1, plat_y = 358, plat_w = 35;
-    int treasure_x = plat_x + (plat_w - treasure_w) / 2;
-    int treasure_y = plat_y - treasure_h;
+    platforms = new PlatformSet();
+    const std::vector<Platform>& plats = platforms->getPlatforms();
+    int idx = rand() % plats.size();
+    const Platform& plat = plats[idx];
+        int treasure_x = plat.x + (plat.w - treasure_w) / 2;
+    int treasure_y = plat.y - treasure_h;
     treasure = new Treasure(treasure_x, treasure_y, treasure_w, treasure_h, renderer, "../resources/treasure_40x30.png");
     hamster_size = 40;
     ground_y = WINDOW_HEIGHT - hamster_size;
@@ -65,12 +68,12 @@ int JumpsterApp::run() {
     int prev_y = hamster->y();
     auto checkTreasureCollision = [](const Hamster* h, const Treasure* t) {
         if (!h || !t) return false;
-        int hx = h->x(), hy = h->y(), hs = h->size();
+        int hc_x = h->x() + h->size() / 2;
+        int hc_y = h->y() + h->size() / 2;
         int tx = t->x(), ty = t->y(), tw = t->width(), th = t->height();
-        return (hx < tx + tw && hx + hs > tx && hy < ty + th && hy + hs > ty);
+        return (hc_x >= tx && hc_x <= tx + tw && hc_y >= ty && hc_y <= ty + th);
     };
     bool treasure_collected = false;
-    bool win_dialog_shown = false;
     while (!quit) {
         prev_y = hamster->y();
         bool on_platform = platforms->isOnPlatform(hamster->x(), hamster->y(), hamster->size(), prev_y);
@@ -94,10 +97,19 @@ int JumpsterApp::run() {
                 treasure_collected = true;
             }
         }
-        if (treasure_collected && !win_dialog_shown) {
+        if (treasure_collected) {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hai vinto!", "Complimenti, hai raccolto il tesoro!", window);
-            win_dialog_shown = true;
-            quit = true;
+            // Ricalcola posizione tesoro su una piattaforma casuale
+            const std::vector<Platform>& plats = platforms->getPlatforms();
+            int idx = rand() % plats.size();
+            const Platform& plat = plats[idx];
+            int treasure_w = treasure->width();
+            int treasure_h = treasure->height();
+            int treasure_x = plat.x + (plat.w - treasure_w) / 2;
+            int treasure_y = plat.y - treasure_h;
+            delete treasure;
+            treasure = new Treasure(treasure_x, treasure_y, treasure_w, treasure_h, renderer, "../resources/treasure_40x30.png");
+            treasure_collected = false;
         }
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
