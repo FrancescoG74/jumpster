@@ -33,4 +33,5 @@ private:
     int m_frameCount = 8;
     int m_animCounter = 0;
     int m_animSpeed = 6; // frame avanzato ogni 6 draw
+    bool m_facing_left = false;
 };

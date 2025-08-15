@@ -50,10 +50,12 @@ void Hamster::processKeys(const SDL_Event& e) {
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
             case SDLK_LEFT:
+                m_facing_left = true;
                 g_vx = g_is_jumping ? -g_max_vx_air : -g_max_vx_ground;
                 if (!g_is_jumping) move(g_vx, 0);
                 break;
             case SDLK_RIGHT:
+                m_facing_left = false;
                 g_vx = g_is_jumping ? g_max_vx_air : g_max_vx_ground;
                 if (!g_is_jumping) move(g_vx, 0);
                 break;
@@ -119,7 +121,8 @@ void Hamster::move(int dx, int dy) {
 void Hamster::draw(SDL_Renderer* renderer) const {
     if (m_textures[m_frame]) {
         SDL_Rect dst = { m_x, m_y, m_size, m_size };
-        SDL_RenderCopy(renderer, m_textures[m_frame], nullptr, &dst);
+        SDL_RendererFlip flip = m_facing_left ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+        SDL_RenderCopyEx(renderer, m_textures[m_frame], nullptr, &dst, 0, nullptr, flip);
     }
 }
 
