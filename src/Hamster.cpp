@@ -1,9 +1,83 @@
+
+#include "../include/Hamster.h"
+int Hamster::getVX() const {
+    extern int g_vx;
+    return g_vx;
+}
+
+// Stato movimento per gestione input e fisica
+int g_vx = 0;
+namespace {
+    bool g_is_jumping = false;
+    int g_jump_velocity = 0;
+    const int g_max_vx_ground = 5;
+    const int g_max_vx_air = 5;
+    const int g_jump_strength = 23;
+    const int g_gravity = 2;
+}
+void Hamster::updatePhysics(bool on_platform, int ground_y, const PlatformSet* platforms) {
+    if (g_is_jumping) {
+        move(g_vx, g_jump_velocity); // move() now updates m_prev_y for vertical movement
+        g_jump_velocity += g_gravity;
+        // Check landing on platform (only when falling)
+        if (g_jump_velocity > 0 && platforms) {
+            const Platform* plat = platforms->getLandingPlatform(x(), y(), size(), m_prev_y);
+            if (plat) {
+                int hy = y() + size();
+                move(0, plat->y - hy); // Snap to platform
+                g_is_jumping = false;
+                g_jump_velocity = 0;
+                return;
+            }
+        }
+        // Check landing on ground
+        if (y() >= ground_y) {
+            move(0, ground_y - y());
+            g_is_jumping = false;
+            g_jump_velocity = 0;
+        }
+    } else {
+        // If not on platform and not on ground, start falling
+        if (!on_platform && y() < ground_y) {
+            g_is_jumping = true;
+            g_jump_velocity = 0;
+        } else if (g_vx != 0) {
+            move(g_vx, 0);
+        }
+    }
+}
+void Hamster::processKeys(const SDL_Event& e) {
+    if (e.type == SDL_KEYDOWN) {
+        switch (e.key.keysym.sym) {
+            case SDLK_LEFT:
+                g_vx = g_is_jumping ? -g_max_vx_air : -g_max_vx_ground;
+                if (!g_is_jumping) move(g_vx, 0);
+                break;
+            case SDLK_RIGHT:
+                g_vx = g_is_jumping ? g_max_vx_air : g_max_vx_ground;
+                if (!g_is_jumping) move(g_vx, 0);
+                break;
+            case SDLK_UP:
+                if (!g_is_jumping) {
+                    g_is_jumping = true;
+                    g_jump_velocity = -g_jump_strength;
+                }
+                break;
+            default: break;
+        }
+    }
+    if (e.type == SDL_KEYUP) {
+        if (e.key.keysym.sym == SDLK_LEFT || e.key.keysym.sym == SDLK_RIGHT) {
+            g_vx = 0;
+        }
+    }
+}
 #include "../include/Hamster.h"
 #include <SDL2/SDL_image.h>
 #include <iostream>
 
 Hamster::Hamster(int x, int y, int size, SDL_Renderer* renderer, const std::string& basePath)
-    : m_x(x), m_y(y), m_size(size)
+    : m_x(x), m_y(y), m_size(size), m_prev_y(y)
 {
     // Carica 8 frame da mario00.png ... mario07.png
     for (int i = 0; i < 8; ++i) {
@@ -31,7 +105,10 @@ Hamster::~Hamster() {
 
 void Hamster::move(int dx, int dy) {
     m_x += dx;
-    m_y += dy;
+    if (dy != 0) {
+        m_prev_y = m_y;
+        m_y += dy;
+    }
     // Limita ai bordi della finestra
     if (m_x < 0) m_x = 0;
     if (m_x + m_size > 619) m_x = 619 - m_size;

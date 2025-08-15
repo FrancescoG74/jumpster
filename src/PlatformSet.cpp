@@ -1,9 +1,12 @@
 #include "../include/PlatformSet.h"
-const Platform* PlatformSet::getLandingPlatform(int hamster_x, int hamster_y, int hamster_size) const {
+// Migliorata: controlla se il bordo inferiore attraversa la piattaforma dall'alto
+const Platform* PlatformSet::getLandingPlatform(int hamster_x, int hamster_y, int hamster_size, int prev_y) const {
     int hx = hamster_x;
     int hy = hamster_y + hamster_size;
+    int prev_hy = prev_y + hamster_size;
     for (const auto& p : m_platforms) {
-        if (hy >= p.y && hy <= p.y + p.h) {
+        // Solo se il bordo inferiore attraversa la piattaforma dall'alto
+        if (prev_hy <= p.y && hy >= p.y && hy <= p.y + p.h) {
             if (hx + hamster_size > p.x && hx < p.x + p.w) {
                 return &p;
             }
@@ -31,20 +34,21 @@ PlatformSet::PlatformSet() {
 }
 
 void PlatformSet::draw(SDL_Renderer* renderer) const {
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 80, 200, 80, 0); // trasparente
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(renderer, 80, 200, 80, 255); // verde opaco
     for (const auto& p : m_platforms) {
         SDL_Rect rect = {p.x, p.y, p.w, p.h};
         SDL_RenderFillRect(renderer, &rect);
     }
 }
 
-bool PlatformSet::isOnPlatform(int hamster_x, int hamster_y, int hamster_size) const {
-    // Controlla se il bordo inferiore del criceto tocca una piattaforma
+// Migliorata: true solo se il bordo inferiore è appena sopra la piattaforma
+bool PlatformSet::isOnPlatform(int hamster_x, int hamster_y, int hamster_size, int prev_y) const {
     int hx = hamster_x;
     int hy = hamster_y + hamster_size;
+    int prev_hy = prev_y + hamster_size;
     for (const auto& p : m_platforms) {
-        if (hy >= p.y && hy <= p.y + p.h) {
+        if (prev_hy <= p.y && hy >= p.y && hy <= p.y + p.h) {
             if (hx + hamster_size > p.x && hx < p.x + p.w) {
                 return true;
             }

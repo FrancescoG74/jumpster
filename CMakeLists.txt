@@ -13,6 +13,7 @@ set(SOURCES
 	src/Hamster.cpp
 	src/Background.cpp
 	src/PlatformSet.cpp
+	src/JumpsterApp.cpp
 )
 
 add_executable(jumpster ${SOURCES})

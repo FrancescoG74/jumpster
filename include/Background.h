@@ -1,8 +1,10 @@
+
 #pragma once
 #include <SDL2/SDL.h>
 #include <string>
+#include "Actor.h"
 
-class Background {
+class Background : public Actor {
 public:
     Background(int width, int height, SDL_Renderer* renderer, const std::string& imagePath);
     ~Background();
