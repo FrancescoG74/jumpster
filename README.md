@@ -1,16 +1,17 @@
+
 # Jumpster
 
-Jumpster è un semplice platformer in C++/SDL2 con animazione sprite.
+Jumpster is a simple platformer game written in C++ using SDL2, featuring sprite animation.
 
-## Compilazione
+## Build Instructions
 
-1. Assicurati di avere installato:
+1. Make sure you have installed:
    - SDL2
    - SDL2_image
    - CMake
-   - Un compilatore C++ (g++ consigliato)
+   - A C++ compiler (g++ recommended)
 
-2. Da terminale, nella root del progetto:
+2. From the project root directory, run:
 
 ```sh
 mkdir build
@@ -20,13 +21,13 @@ make
 ./jumpster
 ```
 
-## Struttura delle directory
+## Directory Structure
 
-- `src/`         — Codice sorgente C++ del gioco
-- `include/`     — Header file C++
-- `resources/`   — Immagini e asset grafici (background, sprite, ecc.)
-- `build/`       — Directory di build (creata da CMake)
+- `src/`         — C++ source code for the game
+- `include/`     — C++ header files
+- `resources/`   — Images and graphic assets (background, sprites, etc.)
+- `build/`       — Build directory (created by CMake)
 
-## Note
-- Le immagini devono trovarsi nella cartella `resources/` o essere referenziate come `../resources/` a seconda del punto di esecuzione.
-- Il criceto è animato tramite uno sprite sheet PNG da 16 frame.
+## Notes
+- Images must be placed in the `resources/` folder or referenced as `../resources/` depending on the execution path.
+- The hamster is animated using either a 16-frame PNG sprite sheet or 8 separate PNG frames (mario00.png ... mario07.png).
