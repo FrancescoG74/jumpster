@@ -6,6 +6,7 @@ const int WINDOW_WIDTH = 619;
 const int WINDOW_HEIGHT = 598;
 
 JumpsterApp::JumpsterApp() {
+    // ...esistente init SDL, window, renderer...
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return;
@@ -30,11 +31,18 @@ JumpsterApp::JumpsterApp() {
         SDL_Quit();
         return;
     }
+    background = new Background(WINDOW_WIDTH, WINDOW_HEIGHT, renderer, "../resources/background_platform.png");
+    // Tesoro 40x32 px sopra la piattaforma {1, 358, 35, 20}
+    int treasure_w = 40;
+    int treasure_h = 32;
+    int plat_x = 1, plat_y = 358, plat_w = 35;
+    int treasure_x = plat_x + (plat_w - treasure_w) / 2;
+    int treasure_y = plat_y - treasure_h;
+    treasure = new Treasure(treasure_x, treasure_y, treasure_w, treasure_h, renderer, "../resources/treasure_40x30.png");
     hamster_size = 40;
     ground_y = WINDOW_HEIGHT - hamster_size;
     hamster = new Hamster(0, ground_y, hamster_size, renderer, "../resources/mario");
     platforms = new PlatformSet();
-    background = new Background(WINDOW_WIDTH, WINDOW_HEIGHT, renderer, "../resources/background_platform.png");
 }
 
 JumpsterApp::~JumpsterApp() {
@@ -55,6 +63,14 @@ int JumpsterApp::run() {
     if (!window || !renderer || !hamster || !platforms || !background) return 1;
     SDL_Event e;
     int prev_y = hamster->y();
+    auto checkTreasureCollision = [](const Hamster* h, const Treasure* t) {
+        if (!h || !t) return false;
+        int hx = h->x(), hy = h->y(), hs = h->size();
+        int tx = t->x(), ty = t->y(), tw = t->width(), th = t->height();
+        return (hx < tx + tw && hx + hs > tx && hy < ty + th && hy + hs > ty);
+    };
+    bool treasure_collected = false;
+    bool win_dialog_shown = false;
     while (!quit) {
         prev_y = hamster->y();
         bool on_platform = platforms->isOnPlatform(hamster->x(), hamster->y(), hamster->size(), prev_y);
@@ -65,13 +81,24 @@ int JumpsterApp::run() {
             }
             hamster->processKeys(e);
         }
-    hamster->updatePhysics(on_platform, ground_y, platforms);
+        hamster->updatePhysics(on_platform, ground_y, platforms);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         background->draw(renderer);
         platforms->draw(renderer);
-    hamster->stepAnimation(hamster->getVX());
+        hamster->stepAnimation(hamster->getVX());
         hamster->draw(renderer);
+        if (treasure && !treasure_collected) {
+            treasure->draw(renderer);
+            if (checkTreasureCollision(hamster, treasure)) {
+                treasure_collected = true;
+            }
+        }
+        if (treasure_collected && !win_dialog_shown) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hai vinto!", "Complimenti, hai raccolto il tesoro!", window);
+            win_dialog_shown = true;
+            quit = true;
+        }
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
     }

@@ -3,6 +3,7 @@
 #include "Hamster.h"
 #include "PlatformSet.h"
 #include "Background.h"
+#include "Treasure.h"
 
 class JumpsterApp {
 public:
@@ -14,6 +15,7 @@ private:
     SDL_Renderer* renderer = nullptr;
     Hamster* hamster = nullptr;
     PlatformSet* platforms = nullptr;
+    class Treasure* treasure = nullptr;
     Background* background = nullptr;
     int hamster_size = 40;
     int ground_y = 0;

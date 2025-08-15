@@ -14,6 +14,7 @@ set(SOURCES
 	src/Background.cpp
 	src/PlatformSet.cpp
 	src/JumpsterApp.cpp
+	src/Treasure.cpp
 )
 
 add_executable(jumpster ${SOURCES})

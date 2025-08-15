@@ -25,17 +25,18 @@ PlatformSet::PlatformSet() {
     m_platforms.push_back({465, 254, 72, 20});
     m_platforms.push_back({163, 222, 74, 20});
     m_platforms.push_back({132, 315, 41, 20});
-    m_platforms.push_back({238, 327, 43, 10});
+    m_platforms.push_back({238, 327, 43, 20});
     m_platforms.push_back({1, 358, 35, 20});
-    m_platforms.push_back({261, 251, 70, 30});
+    m_platforms.push_back({267, 250, 70, 30});
     m_platforms.push_back({379, 367, 60, 20});
     m_platforms.push_back({580, 161, 40, 20});
+    m_platforms.push_back({285, 404, 50, 20});
 
 }
 
 void PlatformSet::draw(SDL_Renderer* renderer) const {
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-    SDL_SetRenderDrawColor(renderer, 80, 200, 80, 255); // verde opaco
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 80, 200, 80, 100); // verde trasparente
     for (const auto& p : m_platforms) {
         SDL_Rect rect = {p.x, p.y, p.w, p.h};
         SDL_RenderFillRect(renderer, &rect);
