@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     // Posiziona il criceto in basso a sinistra
     int hamster_size = 40;
     int ground_y = WINDOW_HEIGHT - hamster_size; // base della finestra
-    Hamster hamster(0, ground_y, hamster_size, renderer, "../resources/hamster_16.png");
+    Hamster hamster(0, ground_y, hamster_size, renderer, "../resources/mario");
     PlatformSet platforms;
     bool is_jumping = false;
     int jump_velocity = 0;
@@ -117,6 +117,7 @@ int main(int argc, char* argv[])
     SDL_RenderClear(renderer);
     background.draw(renderer);
     platforms.draw(renderer);
+    hamster.stepAnimation(vx);
     hamster.draw(renderer);
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS

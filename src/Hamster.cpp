@@ -2,30 +2,31 @@
 #include <SDL2/SDL_image.h>
 #include <iostream>
 
-Hamster::Hamster(int x, int y, int size, SDL_Renderer* renderer, const std::string& imagePath)
-    : m_x(x), m_y(y), m_size(size), m_texture(nullptr)
+Hamster::Hamster(int x, int y, int size, SDL_Renderer* renderer, const std::string& basePath)
+    : m_x(x), m_y(y), m_size(size)
 {
-    // Il path deve essere relativo alla directory resources
-    SDL_Surface* surface = IMG_Load(imagePath.c_str());
-    if (!surface) {
-        std::cerr << "IMG_Load failed: " << IMG_GetError() << std::endl;
-        return;
+    // Carica 8 frame da mario00.png ... mario07.png
+    for (int i = 0; i < 8; ++i) {
+        char filename[128];
+        snprintf(filename, sizeof(filename), "%s%02d.png", basePath.c_str(), i);
+        SDL_Surface* surface = IMG_Load(filename);
+        if (!surface) {
+            std::cerr << "IMG_Load failed: " << filename << " " << IMG_GetError() << std::endl;
+            m_textures[i] = nullptr;
+        } else {
+            m_textures[i] = SDL_CreateTextureFromSurface(renderer, surface);
+            SDL_FreeSurface(surface);
+            if (!m_textures[i]) {
+                std::cerr << "SDL_CreateTextureFromSurface failed: " << filename << " " << SDL_GetError() << std::endl;
+            }
+        }
     }
-    m_texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    if (!m_texture) {
-        std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << std::endl;
-    }
-
-    // Calcola dimensioni frame
-    int texW = 0, texH = 0;
-    SDL_QueryTexture(m_texture, nullptr, nullptr, &texW, &texH);
-    m_frameW = texW / m_frameCount;
-    m_frameH = texH;
 }
 
 Hamster::~Hamster() {
-    if (m_texture) SDL_DestroyTexture(m_texture);
+    for (int i = 0; i < 8; ++i) {
+        if (m_textures[i]) SDL_DestroyTexture(m_textures[i]);
+    }
 }
 
 void Hamster::move(int dx, int dy) {
@@ -39,17 +40,22 @@ void Hamster::move(int dx, int dy) {
 }
 
 void Hamster::draw(SDL_Renderer* renderer) const {
-    if (m_texture) {
-        // Avanza frame animazione
-        Hamster* self = const_cast<Hamster*>(this);
-        self->m_animCounter++;
-        if (self->m_animCounter >= m_animSpeed) {
-            self->m_animCounter = 0;
-            self->m_frame = (self->m_frame + 1) % m_frameCount;
-        }
-        SDL_Rect src = { m_frame * m_frameW, 0, m_frameW, m_frameH };
+    if (m_textures[m_frame]) {
         SDL_Rect dst = { m_x, m_y, m_size, m_size };
-        SDL_RenderCopy(renderer, m_texture, &src, &dst);
+        SDL_RenderCopy(renderer, m_textures[m_frame], nullptr, &dst);
+    }
+}
+
+void Hamster::stepAnimation(int vx) {
+    if (vx != 0) {
+        m_animCounter++;
+        if (m_animCounter >= m_animSpeed) {
+            m_animCounter = 0;
+            m_frame = (m_frame + 1) % m_frameCount;
+        }
+    } else {
+        m_frame = 0; // fermo: primo frame
+        m_animCounter = 0;
     }
 }
 
